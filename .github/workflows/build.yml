@@ -39,7 +39,6 @@ jobs:
         docker run --rm \
           -v "$PWD:/workspace" \
           -w /workspace \
-          -u $(id -u):$(id -g) \
           piccobit/docker-connectiq:4.1.7-2022-11-21-562b8a195 \
           bash -c '
             export PATH=$PATH:/opt/ciq/bin
