@@ -45,12 +45,12 @@ jobs:
             export PATH=$PATH:/opt/ciq/bin
             echo "🔨 Building Approach Speed..."
             
-            # Build for Edge 1040 only (primary target)
-            echo "Building for edge1040..."
+            # Build for Edge 1030 (old SDK, 1040 not available)
+            echo "Building for edge1030..."
             monkeyc \
-              -d edge1040 \
+              -d edge1030 \
               -f monkey.jungle \
-              -o "output/ApproachSpeed-edge1040.prg" \
+              -o "output/ApproachSpeed-edge1030.prg" \
               -y developer_key.der \
               -w 2>&1
             
@@ -64,7 +64,7 @@ jobs:
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: approach-speed-edge1040
+        name: approach-speed-prg
         path: output/*.prg
         if-no-files-found: error
         retention-days: 30
