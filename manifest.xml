@@ -1,7 +1,7 @@
 <?xml version="1.0"?>
 <iq:manifest xmlns:iq="http://www.garmin.com/xml/connectiq" version="3">
     <iq:application 
-        id="a1b2c3d4-e5f6-7890-abcd-ef1234567890" 
+        id="b7f47b75-cba2-4c1e-845a-3289f05ee423" 
         type="datafield"
         name="@Strings.AppName" 
         entry="ApproachSpeedApp" 
