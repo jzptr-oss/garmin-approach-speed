@@ -22,60 +22,48 @@ jobs:
         # Create output directory
         mkdir -p output
         
-        # Generate developer key
-        openssl genrsa -out developer_key.pem 4096
-        openssl pkcs8 -topk8 -inform PEM -outform DER \
-          -in developer_key.pem -out developer_key.der -nocrypt
-        
         # Create proper 60x60 icon
         sudo apt-get update && sudo apt-get install -y imagemagick
         convert -size 60x60 xc:#22AA22 \
           -fill white -gravity center -pointsize 20 -annotate +0+0 "AS" \
           resources/drawables/launcher_icon.png
         
-        # Run build in Docker container
+        # Run build in Docker container (generate key inside to avoid permission issues)
         docker run --rm \
           -v "$PWD:/workspace" \
           -w /workspace \
           kalemena/connectiq:latest \
           bash -c '
             export PATH=$PATH:/opt/ciq/bin
+            echo "🔑 Generating developer key..."
+            openssl genrsa -out developer_key.pem 4096 2>/dev/null
+            openssl pkcs8 -topk8 -inform PEM -outform DER \
+              -in developer_key.pem -out developer_key.der -nocrypt
+            
             echo "🔨 Building Approach Speed..."
             
-            # Build for available devices
-            for device in edge1040 edge530 edge830 edge1030 edge540 edge840; do
-              echo "Building for $device..."
-              monkeyc \
-                -d $device \
-                -f monkey.jungle \
-                -o "output/ApproachSpeed-${device}.prg" \
-                -y developer_key.der \
-                2>&1 || echo "⚠️ $device not available"
-            done
+            # Build for Edge 1040 only (primary target)
+            echo "Building for edge1040..."
+            monkeyc \
+              -d edge1040 \
+              -f monkey.jungle \
+              -o "output/ApproachSpeed-edge1040.prg" \
+              -y developer_key.der \
+              -w 2>&1
             
-            ls -la output/*.prg 2>/dev/null || echo "Checking output..."
+            ls -la output/*.prg 2>/dev/null || echo "❌ No PRG files created"
           '
         
         # Check what was built
         echo "📦 Build results:"
-        ls -la output/*.prg 2>/dev/null || ls -la *.prg 2>/dev/null || echo "No PRG files"
+        ls -la output/*.prg 2>/dev/null || echo "No PRG files"
     
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: approach-speed-builds
-        path: |
-          output/*.prg
-          *.prg
-        if-no-files-found: warn
-        retention-days: 30
-    
-    - name: Upload artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: approach-speed-builds
-        path: "*.prg"
-        if-no-files-found: warn
+        name: approach-speed-edge1040
+        path: output/*.prg
+        if-no-files-found: error
         retention-days: 30
     
     - name: Create Release (on tag)
