@@ -71,9 +71,8 @@ class ApproachSpeedView extends WatchUi.DataField {
     }
 
     // Called when this field becomes visible
-    function onLayout(dc) {
+    function onLayout(dc) as Void {
         // We'll handle all drawing in onUpdate
-        return true;
     }
 
     // Called every second during activity
