@@ -10,66 +10,65 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-    container:
-      image: kalemena/connectiq:latest
     
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
     
-    - name: Setup SDK and devices
+    - name: Build using Docker
       run: |
-        echo "📱 Setting up Connect IQ environment..."
-        echo "SDK location: $CIQ_HOME"
-        ls -la $CIQ_HOME/bin/ || true
+        echo "🐳 Building with Connect IQ Docker image..."
         
-        # Check available devices
-        echo "Available devices:"
-        ls $CIQ_HOME/Devices/ 2>/dev/null || echo "Checking device locations..."
-        find /opt -name "*.json" -path "*[Dd]evice*" 2>/dev/null | head -10 || true
-    
-    - name: Generate Developer Key
-      run: |
-        echo "🔑 Generating developer key..."
+        # Create output directory
+        mkdir -p output
+        
+        # Generate developer key
         openssl genrsa -out developer_key.pem 4096
         openssl pkcs8 -topk8 -inform PEM -outform DER \
           -in developer_key.pem -out developer_key.der -nocrypt
+        
+        # Create proper 60x60 icon
+        sudo apt-get update && sudo apt-get install -y imagemagick
+        convert -size 60x60 xc:#22AA22 \
+          -fill white -gravity center -pointsize 20 -annotate +0+0 "AS" \
+          resources/drawables/launcher_icon.png
+        
+        # Run build in Docker container
+        docker run --rm \
+          -v "$PWD:/workspace" \
+          -w /workspace \
+          kalemena/connectiq:latest \
+          bash -c '
+            export PATH=$PATH:/opt/ciq/bin
+            echo "🔨 Building Approach Speed..."
+            
+            # Build for available devices
+            for device in edge1040 edge530 edge830 edge1030 edge540 edge840; do
+              echo "Building for $device..."
+              monkeyc \
+                -d $device \
+                -f monkey.jungle \
+                -o "output/ApproachSpeed-${device}.prg" \
+                -y developer_key.der \
+                2>&1 || echo "⚠️ $device not available"
+            done
+            
+            ls -la output/*.prg 2>/dev/null || echo "Checking output..."
+          '
+        
+        # Check what was built
+        echo "📦 Build results:"
+        ls -la output/*.prg 2>/dev/null || ls -la *.prg 2>/dev/null || echo "No PRG files"
     
-    - name: Create placeholder icon
-      run: |
-        # Create a simple 60x60 green PNG icon if missing
-        if [ ! -f resources/drawables/launcher_icon.png ] || [ $(stat -c%s resources/drawables/launcher_icon.png 2>/dev/null || echo 0) -lt 100 ]; then
-          echo "🎨 Creating placeholder icon..."
-          apt-get update && apt-get install -y imagemagick 2>/dev/null || true
-          convert -size 60x60 xc:#00AA00 \
-            -fill white -gravity center -pointsize 24 -annotate +0+0 "AS" \
-            resources/drawables/launcher_icon.png 2>/dev/null || echo "Using existing icon"
-        fi
-    
-    - name: Build for Edge devices
-      run: |
-        echo "🔨 Building Approach Speed..."
-        export PATH=$PATH:$CIQ_HOME/bin:/opt/ciq/bin
-        
-        # Show monkeyc version
-        which monkeyc
-        monkeyc --version || true
-        
-        # Try to build
-        for device in edge1040 edge540 edge840 edge530 edge830 edge1030; do
-          echo ""
-          echo "📦 Building for $device..."
-          monkeyc \
-            -d $device \
-            -f monkey.jungle \
-            -o "ApproachSpeed-${device}.prg" \
-            -y developer_key.der \
-            -w 2>&1 && echo "✅ $device built successfully" || echo "⚠️ $device failed"
-        done
-        
-        echo ""
-        echo "Generated files:"
-        ls -la *.prg 2>/dev/null || echo "No PRG files generated"
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: approach-speed-builds
+        path: |
+          output/*.prg
+          *.prg
+        if-no-files-found: warn
+        retention-days: 30
     
     - name: Upload artifacts
       uses: actions/upload-artifact@v4
