@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<settings>
+    <setting propertyKey="@Properties.yellowThreshold" title="@Strings.YellowThreshold">
+        <settingConfig type="numeric" min="10" max="50" />
+    </setting>
+    <setting propertyKey="@Properties.redThreshold" title="@Strings.RedThreshold">
+        <settingConfig type="numeric" min="20" max="80" />
+    </setting>
+    <setting propertyKey="@Properties.soundEnabled" title="@Strings.SoundEnabled">
+        <settingConfig type="boolean" />
+    </setting>
+</settings>

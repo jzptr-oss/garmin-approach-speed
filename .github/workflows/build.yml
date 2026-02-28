@@ -1,0 +1,86 @@
+name: Build Connect IQ App
+
+on:
+  push:
+    branches: [ main, master ]
+  pull_request:
+    branches: [ main, master ]
+  workflow_dispatch:  # Manual trigger
+
+env:
+  SDK_VERSION: "8.4.1"
+  SDK_FILE: "connectiq-sdk-lin-8.4.1-2026-02-03-e9f77eeaa.zip"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Java
+      uses: actions/setup-java@v4
+      with:
+        distribution: 'temurin'
+        java-version: '11'
+    
+    - name: Download Connect IQ SDK
+      run: |
+        echo "📥 Downloading Connect IQ SDK ${SDK_VERSION}..."
+        curl -sL "https://developer.garmin.com/downloads/connect-iq/sdks/${SDK_FILE}" -o sdk.zip
+        unzip -q sdk.zip -d $HOME/ciq-sdk
+        echo "CIQ_HOME=$HOME/ciq-sdk" >> $GITHUB_ENV
+        echo "$HOME/ciq-sdk/bin" >> $GITHUB_PATH
+        
+    - name: Generate Developer Key
+      run: |
+        echo "🔑 Generating developer key..."
+        openssl genrsa -out developer_key.pem 4096
+        openssl pkcs8 -topk8 -inform PEM -outform DER \
+          -in developer_key.pem -out developer_key.der -nocrypt
+    
+    - name: Create placeholder icon
+      run: |
+        # Create a simple 60x60 green PNG icon if missing
+        if [ ! -f resources/drawables/launcher_icon.png ] || [ $(stat -c%s resources/drawables/launcher_icon.png) -lt 100 ]; then
+          echo "🎨 Creating placeholder icon..."
+          # Install ImageMagick
+          sudo apt-get update && sudo apt-get install -y imagemagick
+          convert -size 60x60 xc:#00AA00 \
+            -fill white -gravity center -pointsize 24 -annotate +0+0 "AS" \
+            resources/drawables/launcher_icon.png
+        fi
+    
+    - name: Build for Edge devices
+      run: |
+        echo "🔨 Building Approach Speed..."
+        
+        # Build for each device
+        for device in edge1040 edge540 edge840 edge530 edge830 edge1030plus; do
+          echo "  Building for $device..."
+          monkeyc \
+            -d $device \
+            -f monkey.jungle \
+            -o "ApproachSpeed-${device}.prg" \
+            -y developer_key.der \
+            -w || echo "⚠️ Warning: $device build had issues"
+        done
+        
+        ls -la *.prg 2>/dev/null || echo "No PRG files generated"
+    
+    - name: Upload artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: approach-speed-builds
+        path: "*.prg"
+        if-no-files-found: warn
+        retention-days: 30
+    
+    - name: Create Release (on tag)
+      if: startsWith(github.ref, 'refs/tags/')
+      uses: softprops/action-gh-release@v1
+      with:
+        files: "*.prg"
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

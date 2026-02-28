@@ -1,0 +1,21 @@
+# Build outputs
+*.prg
+*.iq
+
+# Developer keys (DO NOT COMMIT!)
+*.pem
+*.der
+developer_key*
+
+# IDE
+.vscode/
+.idea/
+*.sublime-*
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# SDK
+sdk/
+ciq-sdk/

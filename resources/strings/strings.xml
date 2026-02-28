@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<strings>
+    <string id="AppName">Approach Speed</string>
+    <string id="YellowThreshold">Yellow Alert (km/h)</string>
+    <string id="RedThreshold">Red Alert (km/h)</string>
+    <string id="SoundEnabled">Sound Alerts</string>
+</strings>

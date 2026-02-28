@@ -1,0 +1,18 @@
+# Approach Speed - Bike Radar Data Field
+# Build configuration for Garmin Connect IQ
+
+project.manifest = manifest.xml
+
+# Base resources
+base.sourcePath = source
+base.resourcePath = resources
+
+# Device-specific builds inherit from base
+edge530.resourcePath = $(edge530.resourcePath);resources
+edge540.resourcePath = $(edge540.resourcePath);resources
+edge830.resourcePath = $(edge830.resourcePath);resources
+edge840.resourcePath = $(edge840.resourcePath);resources
+edge1030.resourcePath = $(edge1030.resourcePath);resources
+edge1030plus.resourcePath = $(edge1030plus.resourcePath);resources
+edge1040.resourcePath = $(edge1040.resourcePath);resources
+edge1050.resourcePath = $(edge1050.resourcePath);resources

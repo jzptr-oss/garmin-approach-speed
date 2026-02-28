@@ -1,0 +1,6 @@
+<?xml version="1.0" encoding="utf-8"?>
+<properties>
+    <property id="yellowThreshold" type="number">20</property>
+    <property id="redThreshold" type="number">40</property>
+    <property id="soundEnabled" type="boolean">true</property>
+</properties>
