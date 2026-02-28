@@ -15,9 +15,20 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
     
-    - name: Build using Docker
+    - name: Setup Connect IQ SDK
       run: |
-        echo "🐳 Building with Connect IQ Docker image..."
+        echo "📦 Downloading Connect IQ SDK..."
+        # Download latest SDK (7.x)
+        wget -q https://developer.garmin.com/downloads/connect-iq/sdks/connectiq-sdk-lin-7.3.1-2024-09-28-f40435dff.zip -O sdk.zip
+        unzip -q sdk.zip -d connectiq-sdk
+        export PATH=$PWD/connectiq-sdk/bin:$PATH
+        
+        echo "📋 Available devices:"
+        ls connectiq-sdk/Devices/ | grep -i edge | head -20
+        
+    - name: Build App
+      run: |
+        export PATH=$PWD/connectiq-sdk/bin:$PATH
         
         # Create output directory
         mkdir -p output
@@ -28,37 +39,19 @@ jobs:
           -fill white -gravity center -pointsize 20 -annotate +0+0 "AS" \
           resources/drawables/launcher_icon.png
         
-        # Generate key BEFORE Docker (with proper permissions)
+        # Generate developer key
         echo "🔑 Generating developer key..."
         openssl genrsa -out developer_key.pem 4096 2>/dev/null
         openssl pkcs8 -topk8 -inform PEM -outform DER \
           -in developer_key.pem -out developer_key.der -nocrypt
-        chmod 644 developer_key.der developer_key.pem
         
-        # Run build in Docker container (piccobit has SDK 4.1.7 with edge1040)
-        docker run --rm \
-          -v "$PWD:/workspace" \
-          -w /workspace \
-          piccobit/docker-connectiq:4.1.7-2022-11-21-562b8a195 \
-          bash -c '
-            export PATH=$PATH:/opt/ciq/bin
-            
-            echo "📋 Available devices:"
-            ls /opt/ciq/Devices/ | grep -i edge | head -20
-            
-            echo "🔨 Building Approach Speed..."
-            
-            # Build for edge1030plus (closest to 1040 in this SDK)
-            echo "Building for edge1030plus..."
-            monkeyc \
-              -d edge1030plus \
-              -f monkey.jungle \
-              -o "output/ApproachSpeed-edge1030plus.prg" \
-              -y developer_key.der \
-              -w 2>&1
-            
-            ls -la output/*.prg 2>/dev/null || echo "❌ No PRG files created"
-          '
+        echo "🔨 Building Approach Speed for Edge 1040..."
+        monkeyc \
+          -d edge1040 \
+          -f monkey.jungle \
+          -o "output/ApproachSpeed-edge1040.prg" \
+          -y developer_key.der \
+          -w 2>&1 || true
         
         # Check what was built
         echo "📦 Build results:"
