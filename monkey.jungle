@@ -7,5 +7,5 @@ project.manifest = manifest.xml
 base.sourcePath = source
 base.resourcePath = resources
 
-# Edge 1040 target
-edge1040.resourcePath = $(edge1040.resourcePath);resources
+# Edge 1030 Plus target (closest to 1040 in available SDK)
+edge1030plus.resourcePath = $(edge1030plus.resourcePath);resources

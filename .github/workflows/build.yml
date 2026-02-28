@@ -42,14 +42,18 @@ jobs:
           piccobit/docker-connectiq:4.1.7-2022-11-21-562b8a195 \
           bash -c '
             export PATH=$PATH:/opt/ciq/bin
+            
+            echo "📋 Available devices:"
+            ls /opt/ciq/Devices/ | grep -i edge | head -20
+            
             echo "🔨 Building Approach Speed..."
             
-            # Build for Edge 1040
-            echo "Building for edge1040..."
+            # Build for edge1030plus (closest to 1040 in this SDK)
+            echo "Building for edge1030plus..."
             monkeyc \
-              -d edge1040 \
+              -d edge1030plus \
               -f monkey.jungle \
-              -o "output/ApproachSpeed-edge1040.prg" \
+              -o "output/ApproachSpeed-edge1030plus.prg" \
               -y developer_key.der \
               -w 2>&1
             
