@@ -6,11 +6,10 @@
         name="@Strings.AppName" 
         entry="ApproachSpeedApp" 
         launcherIcon="@Drawables.LauncherIcon"
-        minSdkVersion="3.0.0">
+        minSdkVersion="4.0.0">
         
         <iq:products>
-            <!-- Edge 1030 for build testing (kalemena/connectiq SDK is older) -->
-            <iq:product id="edge1030"/>
+            <iq:product id="edge1040"/>
         </iq:products>
         
         <iq:permissions>

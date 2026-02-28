@@ -22,10 +22,10 @@ jobs:
         # Create output directory
         mkdir -p output
         
-        # Create proper 36x36 icon (edge1030 max size)
+        # Create icon (60x60 for edge1040)
         sudo apt-get update && sudo apt-get install -y imagemagick
-        convert -size 36x36 xc:#22AA22 \
-          -fill white -gravity center -pointsize 12 -annotate +0+0 "AS" \
+        convert -size 60x60 xc:#22AA22 \
+          -fill white -gravity center -pointsize 20 -annotate +0+0 "AS" \
           resources/drawables/launcher_icon.png
         
         # Generate key BEFORE Docker (with proper permissions)
@@ -35,22 +35,22 @@ jobs:
           -in developer_key.pem -out developer_key.der -nocrypt
         chmod 644 developer_key.der developer_key.pem
         
-        # Run build in Docker container
+        # Run build in Docker container (piccobit has SDK 4.1.7 with edge1040)
         docker run --rm \
           -v "$PWD:/workspace" \
           -w /workspace \
           -u $(id -u):$(id -g) \
-          kalemena/connectiq:latest \
+          piccobit/docker-connectiq:4.1.7-2022-11-21-562b8a195 \
           bash -c '
             export PATH=$PATH:/opt/ciq/bin
             echo "🔨 Building Approach Speed..."
             
-            # Build for Edge 1030 (old SDK, 1040 not available)
-            echo "Building for edge1030..."
+            # Build for Edge 1040
+            echo "Building for edge1040..."
             monkeyc \
-              -d edge1030 \
+              -d edge1040 \
               -f monkey.jungle \
-              -o "output/ApproachSpeed-edge1030.prg" \
+              -o "output/ApproachSpeed-edge1040.prg" \
               -y developer_key.der \
               -w 2>&1
             
