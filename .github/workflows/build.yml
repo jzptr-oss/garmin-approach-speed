@@ -33,10 +33,10 @@ jobs:
         # Create output directory
         mkdir -p output
         
-        # Create icon (60x60 for edge1040)
+        # Create icon (40x40 for edge1040)
         sudo apt-get update && sudo apt-get install -y imagemagick
-        convert -size 60x60 xc:#22AA22 \
-          -fill white -gravity center -pointsize 20 -annotate +0+0 "AS" \
+        convert -size 40x40 xc:#22AA22 \
+          -fill white -gravity center -pointsize 14 -annotate +0+0 "AS" \
           resources/drawables/launcher_icon.png
         
         # Generate developer key

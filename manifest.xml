@@ -6,7 +6,7 @@
         name="@Strings.AppName" 
         entry="ApproachSpeedApp" 
         launcherIcon="@Drawables.LauncherIcon"
-        minSdkVersion="4.0.0">
+        minSdkVersion="5.0.0">
         
         <iq:products>
             <iq:product id="edge1040"/>
