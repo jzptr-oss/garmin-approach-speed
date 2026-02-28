@@ -28,18 +28,21 @@ jobs:
           -fill white -gravity center -pointsize 20 -annotate +0+0 "AS" \
           resources/drawables/launcher_icon.png
         
-        # Run build in Docker container (generate key inside to avoid permission issues)
+        # Generate key BEFORE Docker (with proper permissions)
+        echo "🔑 Generating developer key..."
+        openssl genrsa -out developer_key.pem 4096 2>/dev/null
+        openssl pkcs8 -topk8 -inform PEM -outform DER \
+          -in developer_key.pem -out developer_key.der -nocrypt
+        chmod 644 developer_key.der developer_key.pem
+        
+        # Run build in Docker container
         docker run --rm \
           -v "$PWD:/workspace" \
           -w /workspace \
+          -u $(id -u):$(id -g) \
           kalemena/connectiq:latest \
           bash -c '
             export PATH=$PATH:/opt/ciq/bin
-            echo "🔑 Generating developer key..."
-            openssl genrsa -out developer_key.pem 4096 2>/dev/null
-            openssl pkcs8 -topk8 -inform PEM -outform DER \
-              -in developer_key.pem -out developer_key.der -nocrypt
-            
             echo "🔨 Building Approach Speed..."
             
             # Build for Edge 1040 only (primary target)
